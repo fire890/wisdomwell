@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "img1",
+      "description": "An open book on a wooden table, symbolizing wisdom and learning.",
+      "imageUrl": "https://images.unsplash.com/photo-1618866569218-0fd6b98331ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxib29rJTIwdGFibGV8ZW58MHx8fHwxNzcxNTA1NDI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book table"
+    },
+    {
+      "id": "img2",
+      "description": "The Colosseum in Rome, representing history and societal lessons.",
+      "imageUrl": "https://images.unsplash.com/photo-1720224469862-cd415df10080?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjb2xvc3NldW0lMjByb21lfGVufDB8fHx8MTc3MTQ1NTY4MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "colosseum rome"
+    },
+    {
+      "id": "img3",
+      "description": "A collection of colorful spices, symbolizing the ingredients of a good life or recipe.",
+      "imageUrl": "https://images.unsplash.com/photo-1758745464235-ccb8c1253074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmb29kJTIwc3BpY2VzfGVufDB8fHx8MTc3MTQ5ODQzM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "food spices"
+    },
+    {
+      "id": "img4",
+      "description": "A diverse group of people engaged in conversation, representing community and relationships.",
+      "imageUrl": "https://images.unsplash.com/photo-1536785438246-08198ab7dd6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxwZW9wbGUlMjBjb21tdW5pdHl8ZW58MHx8fHwxNzcxNDQwOTgxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "people community"
+    },
+    {
+      "id": "img5",
+      "description": "A compass on an old map, symbolizing guidance and navigating life's journey.",
+      "imageUrl": "https://images.unsplash.com/photo-1641214411114-edfe98e7d0ec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjb21wYXNzJTIwam91cm5leXxlbnwwfHx8fDE3NzE1MDU0MjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "compass journey"
+    },
+    {
+      "id": "img6",
+      "description": "A peaceful path through a lush green forest, symbolizing a journey of well-being.",
+      "imageUrl": "https://images.unsplash.com/photo-1531756716853-09a60d38d820?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxmb3Jlc3QlMjBwYXRofGVufDB8fHx8MTc3MTUwNTQyNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "forest path"
+    }
+  ]
 }
