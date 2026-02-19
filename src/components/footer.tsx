@@ -14,20 +14,20 @@ export function Footer() {
           </div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-muted-foreground">
             <Link href="#" className="hover:text-primary">
-              About
+              소개
             </Link>
             <Link href="#" className="hover:text-primary">
-              Terms of Service
+              서비스 약관
             </Link>
             <Link href="#" className="hover:text-primary">
-              Privacy Policy
+              개인정보처리방침
             </Link>
             <Link href="#" className="hover:text-primary">
-              Contact
+              문의
             </Link>
           </div>
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} WisdomWell. All rights reserved.
+            &copy; {new Date().getFullYear()} WisdomWell. 모든 권리 보유.
           </p>
         </div>
       </div>

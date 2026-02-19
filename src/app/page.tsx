@@ -23,18 +23,18 @@ export default function Home() {
     <div className="space-y-16">
       <section className="text-center">
         <h1 className="text-4xl font-bold tracking-tight md:text-5xl mb-4 font-headline">
-          Share Wisdom, Gain Insight.
+          지혜를 나누고, 통찰력을 얻으세요.
         </h1>
         <p className="mx-auto max-w-2xl text-xl text-muted-foreground mb-8">
-          A community for sharing life experiences and lessons learned. Read,
-          write, and connect with a generation of knowledge.
+          삶의 경험과 교훈을 공유하는 커뮤니티. 세대의 지식을 읽고, 쓰고,
+          연결하세요.
         </p>
         <Button
           size="lg"
           asChild
           className="bg-accent text-accent-foreground hover:bg-accent/90"
         >
-          <Link href="/write">Start Sharing Your Wisdom</Link>
+          <Link href="/write">당신의 지혜를 나눠주세요</Link>
         </Button>
       </section>
 
@@ -45,8 +45,8 @@ export default function Home() {
       <section>
         <Tabs defaultValue="trending" className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
-            <TabsTrigger value="trending">Trending</TabsTrigger>
-            <TabsTrigger value="recent">Recent</TabsTrigger>
+            <TabsTrigger value="trending">트렌딩</TabsTrigger>
+            <TabsTrigger value="recent">최신</TabsTrigger>
           </TabsList>
           <TabsContent value="trending">
             <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">

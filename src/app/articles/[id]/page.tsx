@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ArticleContent } from '@/components/article-content';
 import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 export default function ArticlePage({ params }: { params: { id: string } }) {
   const article = articles.find((a) => a.id === params.id);
@@ -53,13 +54,15 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                 {author.name}
               </p>
               <p className="text-sm">
-                Pre-retirement: {author.preRetirementCareer}
+                은퇴 전 직업: {author.preRetirementCareer}
               </p>
             </div>
           </div>
           <span>&middot;</span>
           <time dateTime={article.createdAt}>
-            {format(new Date(article.createdAt), 'MMMM d, yyyy')}
+            {format(new Date(article.createdAt), 'yyyy년 M월 d일', {
+              locale: ko,
+            })}
           </time>
         </div>
       </header>

@@ -17,13 +17,13 @@ export function ArticleContent({ content }: ArticleContentProps) {
   return (
     <div>
       <div className="mb-4 flex items-center justify-end gap-2">
-        <span className="text-sm text-muted-foreground">Text Size:</span>
+        <span className="text-sm text-muted-foreground">글자 크기:</span>
         <Button
           variant="outline"
           size="icon"
           className="h-8 w-8"
           onClick={decreaseSize}
-          aria-label="Decrease text size"
+          aria-label="글자 크기 줄이기"
         >
           <Minus className="h-4 w-4" />
         </Button>
@@ -32,7 +32,7 @@ export function ArticleContent({ content }: ArticleContentProps) {
           size="icon"
           className="h-8 w-8"
           onClick={increaseSize}
-          aria-label="Increase text size"
+          aria-label="글자 크기 키우기"
         >
           <Plus className="h-4 w-4" />
         </Button>

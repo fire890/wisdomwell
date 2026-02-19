@@ -59,7 +59,7 @@ export const articles: Article[] = [
 
 Paragraphs should be separated by newlines. This allows for better formatting when rendered. This is just a sample of longer content to simulate a real article. The joy of reading is something to be cherished, and how we organize our books can enhance that joy.`,
     authorId: 'author-1',
-    category: 'Life Lessons',
+    category: '삶의 교훈',
     imageId: 'img1',
     createdAt: '2024-05-15T10:00:00Z',
     trending: true,
@@ -72,7 +72,7 @@ Paragraphs should be separated by newlines. This allows for better formatting wh
 
 This article can be extended with more historical examples and analysis to provide deeper insights. The goal is to make history relevant and engaging for a modern audience.`,
     authorId: 'author-2',
-    category: 'Career',
+    category: '경력',
     imageId: 'img2',
     createdAt: '2024-05-14T14:30:00Z',
     trending: true,
@@ -84,7 +84,7 @@ This article can be extended with more historical examples and analysis to provi
 
 Food is a universal language. It connects people, evokes memories, and brings comfort. Sharing a meal is one of the most fundamental human experiences.`,
     authorId: 'author-3',
-    category: 'Hobbies',
+    category: '취미',
     imageId: 'img3',
     createdAt: '2024-05-13T09:00:00Z',
     trending: false,
@@ -96,7 +96,7 @@ Food is a universal language. It connects people, evokes memories, and brings co
 
 These connections can be formed anywhere: in the community, at work, or even within our own families. The key is to be open and curious.`,
     authorId: 'author-1',
-    category: 'Relationships',
+    category: '관계',
     imageId: 'img4',
     createdAt: '2024-05-12T11:00:00Z',
     trending: false,
@@ -108,7 +108,7 @@ These connections can be formed anywhere: in the community, at work, or even wit
 
 Think of it as a portfolio career, where you can combine different interests and income streams. It's a chance to redefine work on your own terms.`,
     authorId: 'author-2',
-    category: 'Career',
+    category: '경력',
     imageId: 'img5',
     createdAt: '2024-05-16T08:00:00Z',
     trending: true,
@@ -120,7 +120,7 @@ Think of it as a portfolio career, where you can combine different interests and
 
 Try leaving your phone behind. Disconnect to reconnect. The benefits to your mental and physical health are immeasurable.`,
     authorId: 'author-3',
-    category: 'Health',
+    category: '건강',
     imageId: 'img6',
     createdAt: '2024-05-11T18:00:00Z',
     trending: false,
@@ -128,9 +128,9 @@ Try leaving your phone behind. Disconnect to reconnect. The benefits to your men
 ];
 
 export const categories: Category[] = [
-  { name: 'Life Lessons', icon: BookOpen },
-  { name: 'Career', icon: Briefcase },
-  { name: 'Health', icon: HeartPulse },
-  { name: 'Relationships', icon: Users },
-  { name: 'Hobbies', icon: Paintbrush },
+  { name: '삶의 교훈', icon: BookOpen },
+  { name: '경력', icon: Briefcase },
+  { name: '건강', icon: HeartPulse },
+  { name: '관계', icon: Users },
+  { name: '취미', icon: Paintbrush },
 ];

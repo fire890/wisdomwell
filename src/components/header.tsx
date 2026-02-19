@@ -14,13 +14,13 @@ export function Header() {
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
           <Button variant="ghost" asChild>
-            <Link href="/login">Log In</Link>
+            <Link href="/login">로그인</Link>
           </Button>
           <Button
             asChild
             className="bg-accent text-accent-foreground hover:bg-accent/90"
           >
-            <Link href="/write">Start Writing</Link>
+            <Link href="/write">글쓰기 시작</Link>
           </Button>
         </nav>
       </div>

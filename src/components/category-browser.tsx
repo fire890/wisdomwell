@@ -6,7 +6,7 @@ export function CategoryBrowser() {
   return (
     <div>
       <h2 className="mb-6 text-center text-2xl font-bold">
-        Explore by Category
+        카테고리별로 살펴보기
       </h2>
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
         {categories.map((category) => {

@@ -30,7 +30,7 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
           {category.name}
         </h1>
         <p className="text-lg text-muted-foreground">
-          {articlesInCategory.length} articles in this category
+          이 카테고리에 {articlesInCategory.length}개의 게시물이 있습니다
         </p>
       </header>
 
@@ -45,7 +45,7 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
         </div>
       ) : (
         <p className="text-center text-muted-foreground mt-12">
-          No articles found in this category yet.
+          이 카테고리에는 아직 게시물이 없습니다.
         </p>
       )}
     </div>
