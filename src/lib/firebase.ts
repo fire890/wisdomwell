@@ -9,7 +9,8 @@ const firebaseConfig = {
   storageBucket: "wisdom-612ce.firebasestorage.app",
   messagingSenderId: "867523203910",
   appId: "1:867523203910:web:3b60c9cbf60ed96f008b47",
-  measurementId: "G-E4TWEFJ26Y"
+  measurementId: "G-E4TWEFJ26Y",
+  databaseURL: "https://wisdom-612ce-default-rtdb.firebaseio.com" // 추가된 부분
 };
 
 // Initialize Firebase (SSR 고려: 이미 초기화되었는지 확인)
