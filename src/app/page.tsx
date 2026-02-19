@@ -1,27 +1,55 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { ArticleCard } from '@/components/article-card';
 import { CategoryBrowser } from '@/components/category-browser';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { articles, authors } from '@/lib/data';
+import { articles as staticArticles, authors } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 import type { Article } from '@/lib/data';
+import { database } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
 
 export default function Home() {
-  const recentArticles = [...articles].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-  const trendingArticles = articles.filter((a) => a.trending);
+  const [firebaseArticles, setFirebaseArticles] = useState<Article[]>([]);
+  const [allArticles, setAllArticles] = useState<Article[]>(staticArticles);
+
+  useEffect(() => {
+    const articlesRef = ref(database, 'articles');
+    const unsubscribe = onValue(articlesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.values(data) as Article[];
+        setFirebaseArticles(list);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // 합치기 (중복 제거 등 필요할 수 있지만 여기서는 단순히 합침)
+    // 최신순 정렬을 위해 createdAt 기준 정렬
+    const merged = [...staticArticles, ...firebaseArticles].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    setAllArticles(merged);
+  }, [firebaseArticles]);
+
+  const recentArticles = [...allArticles];
+  const trendingArticles = allArticles.filter((a) => a.trending);
 
   const getArticleData = (article: Article) => {
-    const author = authors.find((a) => a.id === article.authorId);
-    const image = PlaceHolderImages.find((img) => img.id === article.imageId);
+    const author = authors.find((a) => a.id === article.authorId) || authors[0];
+    const image = PlaceHolderImages.find((img) => img.id === article.imageId) || PlaceHolderImages[0];
     return { ...article, author, image };
   };
 
   return (
-    <div className="space-y-16">
-      <section className="text-center">
+    <div className="space-y-16 px-4">
+      <section className="text-center py-12">
         <h1 className="text-4xl font-bold tracking-tight md:text-5xl mb-4 font-headline">
           지혜를 나누고, 통찰력을 얻으세요.
         </h1>
@@ -50,12 +78,18 @@ export default function Home() {
           </TabsList>
           <TabsContent value="trending">
             <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {trendingArticles.map((article) => (
-                <ArticleCard
-                  key={article.id}
-                  article={getArticleData(article)}
-                />
-              ))}
+              {trendingArticles.length > 0 ? (
+                trendingArticles.map((article) => (
+                  <ArticleCard
+                    key={article.id}
+                    article={getArticleData(article)}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12 text-muted-foreground">
+                  트렌딩 글이 없습니다.
+                </div>
+              )}
             </div>
           </TabsContent>
           <TabsContent value="recent">
