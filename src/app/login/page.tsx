@@ -1,53 +1,64 @@
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { GoogleIcon } from '@/components/icons/google';
-import { KakaoIcon } from '@/components/icons/kakao';
-import Link from 'next/link';
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { signInWithGoogle, onAuthStateChange, UserProfile } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { GoogleIcon } from "@/components/icons/google";
+import Image from "next/image";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChange(async (user) => {
+      if (user) {
+        // User is signed in, redirect to home or profile setup
+        router.push("/"); // Redirect to home for now
+      } else {
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      // Redirection handled by useEffect
+    } catch (error) {
+      console.error("Login failed:", error);
+      // Display error message to user
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+
   return (
-    <div className="flex items-center justify-center py-12">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">다시 오신 것을 환영합니다</CardTitle>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
           <CardDescription>
-            WisdomWell에 계속하려면 로그인하세요.
+            Choose your preferred method to sign in to your account
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Button variant="outline" className="w-full h-12 text-lg">
-            <GoogleIcon className="mr-2 h-6 w-6" />
-            Google로 계속하기
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full h-12 text-lg"
-            style={{
-              backgroundColor: '#FEE500',
-              color: '#000000',
-              borderColor: '#FEE500',
-            }}
-          >
-            <KakaoIcon className="mr-2 h-6 w-6" />
-            카카오로 계속하기
-          </Button>
-          <p className="pt-4 text-center text-sm text-muted-foreground">
-            계속하면{' '}
-            <Link href="#" className="underline hover:text-primary">
-              서비스 약관
-            </Link>
-            과{' '}
-            <Link href="#" className="underline hover:text-primary">
-              개인정보처리방침
-            </Link>
-            에 동의하는 것으로 간주됩니다.
-          </p>
+        <CardContent>
+          <div className="grid gap-4">
+            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+              <GoogleIcon className="mr-2 h-4 w-4" />
+              Sign in with Google
+            </Button>
+            {/* Kakao Sign-in will be added later */}
+            {/* <Button variant="outline" className="w-full">
+              <Image src="/kakao-logo.svg" alt="Kakao Logo" width={16} height={16} className="mr-2" />
+              Sign in with Kakao
+            </Button> */}
+          </div>
         </CardContent>
       </Card>
     </div>

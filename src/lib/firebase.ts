@@ -1,6 +1,8 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth } from "firebase/auth"; // Import getAuth
+import { getFirestore } from "firebase/firestore"; // Import getFirestore
 
 const firebaseConfig = {
   apiKey: "AIzaSyDYKWcnZPsAhSP2UieTy39L9Vhiu2c_4Hc",
@@ -19,7 +21,11 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 // Realtime Database 인스턴스
 const database = getDatabase(app);
 
+// Initialize Authentication and Firestore
+const auth = getAuth(app); // Initialize Firebase Authentication
+const firestore = getFirestore(app); // Initialize Firestore
+
 // Analytics (클라이언트 사이드에서만 실행)
 const analytics = typeof window !== "undefined" ? isSupported().then(yes => yes ? getAnalytics(app) : null) : null;
 
-export { app, database, analytics };
+export { app, database, analytics, auth, firestore };

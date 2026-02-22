@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { onAuthStateChange } from '@/lib/auth'; // Import onAuthStateChange
 
 type SaveStatus = '저장됨' | '저장 중...' | '저장되지 않음';
 
@@ -29,6 +30,22 @@ export default function WritePage() {
   const { toast } = useToast();
   const router = useRouter();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Authentication state
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChange((user) => {
+      if (user) {
+        setCurrentUser(user);
+        setLoadingAuth(false);
+      } else {
+        router.push("/login"); // Redirect to login if not authenticated
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   useEffect(() => {
     if (timeoutRef.current) {
@@ -62,6 +79,16 @@ export default function WritePage() {
   };
 
   const handlePublish = async () => {
+    if (!currentUser) {
+      toast({
+        title: '인증 필요',
+        description: '글을 작성하려면 로그인해야 합니다.',
+        variant: 'destructive',
+      });
+      router.push("/login");
+      return;
+    }
+
     if (!title.trim() || !content.trim()) {
       toast({
         title: '입력 오류',
@@ -81,7 +108,7 @@ export default function WritePage() {
         title,
         content,
         category,
-        authorId: 'author-1', // 임시 작성자 ID
+        authorId: currentUser.uid, // Use actual author ID
         imageId: `img${Math.floor(Math.random() * 6) + 1}`, // 임시 이미지 ID
         createdAt: new Date().toISOString(),
         timestamp: serverTimestamp(),
@@ -108,6 +135,11 @@ export default function WritePage() {
     }
   };
 
+  if (loadingAuth) {
+    return <div className="flex justify-center items-center h-screen">Loading authentication...</div>;
+  }
+
+  // If currentUser is null, useEffect will redirect to /login, so this part won't be reached for unauthenticated users
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
