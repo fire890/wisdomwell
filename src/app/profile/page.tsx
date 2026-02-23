@@ -38,6 +38,15 @@ export default function ProfilePage() {
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!nickname || !job) {
+      toast({
+        title: "Required Fields",
+        description: "Please enter both nickname and job.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (currentUser) {
       try {
         await updateUserProfile(currentUser.uid, { nickname, job });
@@ -45,7 +54,7 @@ export default function ProfilePage() {
           title: "Profile Updated",
           description: "Your profile has been successfully updated.",
         });
-        // Optionally redirect or show success message
+        router.push("/"); // Redirect to home after successful update
       } catch (error) {
         console.error("Error updating profile:", error);
         toast({
@@ -65,9 +74,9 @@ export default function ProfilePage() {
     <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Edit Profile</CardTitle>
+          <CardTitle className="text-2xl font-bold">Setup Profile</CardTitle>
           <CardDescription>
-            Update your nickname and job
+            Please provide your nickname and job to continue
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -80,6 +89,7 @@ export default function ProfilePage() {
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="Enter your nickname"
+                required
               />
             </div>
             <div className="grid gap-2">
@@ -90,10 +100,11 @@ export default function ProfilePage() {
                 value={job}
                 onChange={(e) => setJob(e.target.value)}
                 placeholder="Enter your job or occupation"
+                required
               />
             </div>
             <Button type="submit" className="w-full">
-              Save Changes
+              Save and Continue
             </Button>
           </form>
         </CardContent>

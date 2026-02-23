@@ -2,21 +2,34 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithGoogle, onAuthStateChange, UserProfile } from "@/lib/auth";
+import { signInWithGoogle, onAuthStateChange, handleRedirectResult, getUserProfile } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { GoogleIcon } from "@/components/icons/google";
-import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const processRedirect = async () => {
+      try {
+        await handleRedirectResult();
+      } catch (error) {
+        console.error("Error handling redirect:", error);
+      }
+    };
+
+    processRedirect();
+
     const unsubscribe = onAuthStateChange(async (user) => {
       if (user) {
-        // User is signed in, redirect to home or profile setup
-        router.push("/"); // Redirect to home for now
+        const profile = await getUserProfile(user.uid);
+        if (profile && (!profile.nickname || !profile.job)) {
+          router.push("/profile"); // Redirect to profile setup if info is missing
+        } else {
+          router.push("/"); // Redirect to home if profile is complete
+        }
       } else {
         setLoading(false);
       }
@@ -26,11 +39,11 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     try {
+      setLoading(true);
       await signInWithGoogle();
-      // Redirection handled by useEffect
     } catch (error) {
       console.error("Login failed:", error);
-      // Display error message to user
+      setLoading(false);
     }
   };
 
