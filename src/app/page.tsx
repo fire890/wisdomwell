@@ -42,9 +42,8 @@ export default function Home() {
   const trendingArticles = allArticles.filter((a) => a.trending);
 
   const getArticleData = (article: Article) => {
-    const author = authors.find((a) => a.id === article.authorId) || authors[0];
     const image = PlaceHolderImages.find((img) => img.id === article.imageId) || PlaceHolderImages[0];
-    return { ...article, author, image };
+    return { ...article, image };
   };
 
   return (

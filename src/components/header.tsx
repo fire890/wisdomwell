@@ -47,10 +47,12 @@ export function Header() {
         <nav className="flex items-center gap-2 sm:gap-4">
           {currentUser ? (
             <>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={userProfile?.photoURL || currentUser.photoURL || "/default-avatar.png"} alt={userProfile?.nickname || currentUser.displayName || "User"} />
-                <AvatarFallback>{(userProfile?.nickname || currentUser.displayName || "User").charAt(0)}</AvatarFallback>
-              </Avatar>
+              <Link href="/profile" className="hover:opacity-80 transition-opacity">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={userProfile?.photoURL || currentUser.photoURL || "/default-avatar.png"} alt={userProfile?.nickname || currentUser.displayName || "User"} />
+                  <AvatarFallback>{(userProfile?.nickname || currentUser.displayName || "User").charAt(0)}</AvatarFallback>
+                </Avatar>
+              </Link>
               <Button variant="ghost" onClick={handleLogout}>
                 로그아웃
               </Button>
