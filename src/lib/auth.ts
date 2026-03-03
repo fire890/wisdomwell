@@ -39,18 +39,19 @@ export const createUserProfile = async (user: User) => {
   const docSnap = await getDoc(userRef);
 
   if (!docSnap.exists()) {
-    // If user profile doesn't exist, create it with initial data
+    // If user profile doesn't exist, create it with initial data from Google
     const userProfile: UserProfile = {
       uid: user.uid,
       email: user.email,
       displayName: user.displayName,
       photoURL: user.photoURL,
-      nickname: user.displayName, // Default nickname to display name
+      nickname: user.displayName || "익명", // Default nickname to Google's display name
       job: "", // Default empty job
     };
     await setDoc(userRef, userProfile);
     return userProfile;
   } else {
+    // If it exists, return existing profile
     return docSnap.data() as UserProfile;
   }
 };

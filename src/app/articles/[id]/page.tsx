@@ -1,28 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { notFound, useRouter } from 'next/navigation'; // Import useRouter
+import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { articles as staticArticles, authors } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button'; // Import Button
+import { Button } from '@/components/ui/button';
 import { ArticleContent } from '@/components/article-content';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { database } from '@/lib/firebase';
-import { ref, get, child, remove } from 'firebase/database'; // Import remove
-import { useToast } from '@/hooks/use-toast'; // Import useToast
-import { onAuthStateChange } from '@/lib/auth'; // Import onAuthStateChange
+import { ref, get, child, remove } from 'firebase/database';
+import { useToast } from '@/hooks/use-toast';
+import { onAuthStateChange, getUserProfile, type UserProfile } from '@/lib/auth';
 import type { Article } from '@/lib/data';
 
 export default function ArticlePage({ params }: { params: { id: string } }) {
-  const router = useRouter(); // Initialize useRouter
-  const { toast } = useToast(); // Initialize useToast
+  const router = useRouter();
+  const { toast } = useToast();
   const [article, setArticle] = useState<Article | null>(null);
+  const [authorProfile, setAuthorProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any | null>(null); // State for current user
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -32,31 +33,57 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   }, []);
 
   useEffect(() => {
-    // 1. 먼저 정적 데이터에서 찾기
-    const staticArticle = staticArticles.find((a) => a.id === params.id);
-    if (staticArticle) {
-      setArticle(staticArticle);
-      setLoading(false);
-      return;
-    }
-
-    // 2. 없으면 Firebase에서 찾기
-    const dbRef = ref(database);
-    get(child(dbRef, `articles`))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const found = Object.values(data).find((a: any) => a.id === params.id) as Article;
-          if (found) {
-            setArticle(found);
+    const fetchArticleAndAuthor = async () => {
+      setLoading(true);
+      try {
+        // 1. 글 데이터 가져오기
+        let foundArticle: Article | null = null;
+        
+        // 정적 데이터에서 먼저 확인
+        const staticArticle = staticArticles.find((a) => a.id === params.id);
+        if (staticArticle) {
+          foundArticle = staticArticle;
+        } else {
+          // Firebase에서 확인
+          const dbRef = ref(database);
+          const snapshot = await get(child(dbRef, `articles`));
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            foundArticle = Object.values(data).find((a: any) => a.id === params.id) as Article;
           }
         }
+
+        if (foundArticle) {
+          setArticle(foundArticle);
+          
+          // 2. 글쓴이 프로필 가져오기
+          // 정적 저자인 경우 (id가 'author-'로 시작)
+          const staticAuthor = authors.find((a) => a.id === foundArticle!.authorId);
+          if (staticAuthor) {
+            setAuthorProfile({
+              uid: staticAuthor.id,
+              displayName: staticAuthor.name,
+              nickname: staticAuthor.name,
+              photoURL: staticAuthor.avatarUrl,
+              email: '',
+              job: staticAuthor.preRetirementCareer,
+            });
+          } else {
+            // Firestore에서 실제 유저 프로필 가져오기
+            const profile = await getUserProfile(foundArticle.authorId);
+            if (profile) {
+              setAuthorProfile(profile);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error(error);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchArticleAndAuthor();
   }, [params.id]);
 
   const handleDelete = async () => {
@@ -79,7 +106,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         title: "게시글 삭제 완료",
         description: "게시글이 성공적으로 삭제되었습니다.",
       });
-      router.push("/"); // Redirect to home page
+      router.push("/");
     } catch (error) {
       console.error("Error deleting article:", error);
       toast({
@@ -98,8 +125,10 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     notFound();
   }
 
-  const author = authors.find((a) => a.id === article.authorId) || authors[0];
   const image = PlaceHolderImages.find((img) => img.id === article.imageId) || PlaceHolderImages[0];
+  const displayName = authorProfile?.nickname || authorProfile?.displayName || "알 수 없는 사용자";
+  const displayJob = authorProfile?.job || "커리어를 준비 중입니다";
+  const avatarUrl = authorProfile?.photoURL || "";
 
   return (
     <article className="max-w-4xl mx-auto py-8 px-4">
@@ -124,15 +153,15 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         <div className="flex flex-col md:flex-row md:items-center gap-4 text-muted-foreground">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10 md:h-12 md:w-12">
-              <AvatarImage src={author.avatarUrl} alt={author.name} />
-              <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
+              <AvatarImage src={avatarUrl} alt={displayName} />
+              <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
               <p className="font-semibold text-foreground text-base md:text-lg">
-                {author.name}
+                {displayName}
               </p>
               <p className="text-xs md:text-sm">
-                은퇴 전 직업: {author.preRetirementCareer}
+                은퇴 전 직업: {displayJob}
               </p>
             </div>
           </div>
