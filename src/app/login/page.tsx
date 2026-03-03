@@ -12,23 +12,30 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Listen for auth state changes
     const unsubscribe = onAuthStateChange(async (user) => {
+      console.log("Auth state changed, user:", user?.uid);
+      
       if (user) {
         try {
           const profile = await getUserProfile(user.uid);
+          console.log("Profile fetched:", profile);
+          
           if (profile && profile.nickname && profile.job) {
-            router.push("/"); // Redirect to home if profile is complete
+            router.replace("/"); // Use replace to prevent back-button loops
           } else {
-            router.push("/profile"); // Redirect to profile setup if info is missing or profile doesn't exist
+            router.replace("/profile");
           }
         } catch (error) {
           console.error("Error fetching user profile:", error);
-          setLoading(false);
+          setLoading(false); // Only show login button if profile fetch fails
         }
       } else {
-        setLoading(false);
+        console.log("No user authenticated");
+        setLoading(false); // Show login button if no user
       }
     });
+    
     return () => unsubscribe();
   }, [router]);
 
@@ -36,37 +43,45 @@ export default function LoginPage() {
     try {
       setLoading(true);
       await signInWithGoogle();
-      // onAuthStateChange will handle redirection
-    } catch (error) {
+      // onAuthStateChange will handle the redirection automatically
+    } catch (error: any) {
       console.error("Login failed:", error);
+      // Firebase popup closed by user or other error
+      if (error.code !== 'auth/popup-closed-by-user') {
+        alert("로그인 중 오류가 발생했습니다: " + error.message);
+      }
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex flex-col justify-center items-center h-screen gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="text-muted-foreground animate-pulse">인증 확인 중...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900 px-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold font-headline">로그인</CardTitle>
           <CardDescription>
-            Choose your preferred method to sign in to your account
+            WisdomWell에 오신 것을 환영합니다.<br />
+            구글 계정으로 간편하게 시작해 보세요.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
-            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
-              <GoogleIcon className="mr-2 h-4 w-4" />
-              Sign in with Google
+          <div className="grid gap-4 mt-4">
+            <Button variant="outline" size="lg" className="w-full h-12" onClick={handleGoogleSignIn}>
+              <GoogleIcon className="mr-3 h-5 w-5" />
+              구글로 계속하기
             </Button>
-            {/* Kakao Sign-in will be added later */}
-            {/* <Button variant="outline" className="w-full">
-              <Image src="/kakao-logo.svg" alt="Kakao Logo" width={16} height={16} className="mr-2" />
-              Sign in with Kakao
-            </Button> */}
+            <p className="text-xs text-center text-muted-foreground mt-4">
+              로그인함으로써 서비스 약관 및 개인정보 처리방침에 동의하게 됩니다.
+            </p>
           </div>
         </CardContent>
       </Card>
