@@ -13,37 +13,47 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isRedirecting = useRef(false);
+  const isProcessingManualLogin = useRef(false);
 
-  // 리다이렉트 함수 (가장 확실한 방법 사용)
+  // 리다이렉트 함수 (확실한 이동 보장)
   const performRedirect = (path: string) => {
     if (isRedirecting.current) return;
     isRedirecting.current = true;
     
-    // Next.js router와 브라우저 location을 모두 활용하여 확실히 이동
+    console.log(`Final redirect to ${path}`);
     router.replace(path);
+    
+    // Fallback: 800ms 후에도 페이지가 그대로라면 강제 이동
     setTimeout(() => {
       if (window.location.pathname === "/login") {
         window.location.href = path;
       }
-    }, 500);
+    }, 800);
+  };
+
+  const checkProfileAndRedirect = async (uid: string) => {
+    try {
+      const profile = await getUserProfile(uid);
+      if (profile && profile.nickname && profile.nickname !== "익명" && profile.job) {
+        performRedirect("/");
+      } else {
+        performRedirect("/profile");
+      }
+    } catch (err) {
+      console.error("Profile check error:", err);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
+    // 자동 로그인 체크 (이미 세션이 있는 경우)
     const unsubscribe = onAuthStateChange(async (user) => {
-      if (isRedirecting.current) return;
+      // 수동 로그인 중이거나 이미 이동 중이면 리스너 로직 건너뜀
+      if (isProcessingManualLogin.current || isRedirecting.current) return;
 
       if (user) {
-        try {
-          const profile = await getUserProfile(user.uid);
-          if (profile && profile.nickname && profile.nickname !== "익명" && profile.job) {
-            performRedirect("/");
-          } else {
-            performRedirect("/profile");
-          }
-        } catch (err) {
-          console.error("Profile check error:", err);
-          setLoading(false);
-        }
+        console.log("Auto-login detected");
+        await checkProfileAndRedirect(user.uid);
       } else {
         setLoading(false);
       }
@@ -53,23 +63,33 @@ export default function LoginPage() {
   }, [router]);
 
   const handleGoogleSignIn = async () => {
-    if (isRedirecting.current) return;
+    if (isRedirecting.current || isProcessingManualLogin.current) return;
     
     try {
       setError(null);
       setLoading(true);
+      isProcessingManualLogin.current = true;
       
+      console.log("Starting manual sign-in");
       const profile = await signInWithGoogle();
-
-      if (profile && profile.nickname && profile.nickname !== "익명" && profile.job) {
-        performRedirect("/");
-      } else {
-        performRedirect("/profile");
+      
+      if (profile) {
+        console.log("Manual sign-in success, profile found");
+        if (profile.nickname && profile.nickname !== "익명" && profile.job) {
+          performRedirect("/");
+        } else {
+          performRedirect("/profile");
+        }
       }
     } catch (err: any) {
-      console.error("SignIn error:", err);
+      console.error("Manual sign-in error:", err);
+      isProcessingManualLogin.current = false;
+      
+      // 이미 리다이렉트가 시작되었다면 에러 무시
+      if (isRedirecting.current) return;
+
       if (err.code !== 'auth/popup-closed-by-user') {
-        setError("로그인에 실패했습니다. 다시 시도해 주세요.");
+        setError(`로그인에 실패했습니다: ${err.message || "알 수 없는 오류"}`);
       }
       setLoading(false);
     }
@@ -103,7 +123,7 @@ export default function LoginPage() {
           )}
           
           <div className="grid gap-4 mt-4">
-            <Button variant="outline" size="lg" className="w-full h-12" onClick={handleGoogleSignIn}>
+            <Button variant="outline" size="lg" className="w-full h-12" onClick={handleGoogleSignIn} disabled={isProcessingManualLogin.current}>
               <GoogleIcon className="mr-3 h-5 w-5" />
               구글로 계속하기
             </Button>
