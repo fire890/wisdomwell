@@ -1,6 +1,26 @@
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { auth, firestore } from "./firebase";
+
+// ... (existing UserProfile interface)
+
+export const isNicknameAvailable = async (nickname: string, excludeUid?: string) => {
+  const usersRef = collection(firestore, "users");
+  const q = query(usersRef, where("nickname", "==", nickname));
+  const querySnapshot = await getDocs(q);
+  
+  if (querySnapshot.empty) {
+    return true;
+  }
+  
+  // If we found a document, check if it's the current user's document
+  if (excludeUid) {
+    const otherUsers = querySnapshot.docs.filter(doc => doc.id !== excludeUid);
+    return otherUsers.length === 0;
+  }
+  
+  return false;
+};
 
 // Define the UserProfile interface
 export interface UserProfile {

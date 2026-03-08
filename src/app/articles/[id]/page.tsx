@@ -16,6 +16,18 @@ import { ref, get, child, remove } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChange, getUserProfile, type UserProfile } from '@/lib/auth';
 import type { Article } from '@/lib/data';
+import { Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function ArticlePage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -24,6 +36,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   const [authorProfile, setAuthorProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -96,10 +109,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       return;
     }
 
-    if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
-      return;
-    }
-
+    setIsDeleting(true);
     try {
       await remove(ref(database, `articles/${article.id}`));
       toast({
@@ -114,6 +124,8 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         description: "게시글 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -143,9 +155,37 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
           />
         </div>
 
-        <Badge variant="secondary" className="mb-4">
-          {article.category}
-        </Badge>
+        <div className="flex justify-between items-start mb-4">
+          <Badge variant="secondary">
+            {article.category}
+          </Badge>
+          
+          {currentUser && article && currentUser.uid === article.authorId && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  삭제하기
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>정말로 이 글을 삭제하시겠습니까?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    삭제된 글은 다시 복구할 수 없습니다. 신중하게 선택해 주세요.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    {isDeleting ? "삭제 중..." : "글 삭제"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 font-headline">
           {article.title}
         </h1>
@@ -171,11 +211,6 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
               locale: ko,
             })}
           </time>
-          {currentUser && currentUser.uid === article.authorId && (
-            <Button variant="destructive" onClick={handleDelete} className="ml-auto">
-              삭제
-            </Button>
-          )}
         </div>
       </header>
 
