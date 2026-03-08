@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { onAuthStateChange } from '@/lib/auth'; // Import onAuthStateChange
+import { onAuthStateChange, getUserProfile } from '@/lib/auth'; // Import getUserProfile
 
 type SaveStatus = '저장됨' | '저장 중...' | '저장되지 않음';
 
@@ -36,16 +36,31 @@ export default function WritePage() {
   const [loadingAuth, setLoadingAuth] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChange((user) => {
+    const unsubscribe = onAuthStateChange(async (user) => {
       if (user) {
-        setCurrentUser(user);
-        setLoadingAuth(false);
+        try {
+          const profile = await getUserProfile(user.uid);
+          // 프로필이 없거나 닉네임이 기본값(익명)이거나 직업이 없으면 프로필 설정으로 이동
+          if (!profile || !profile.nickname || profile.nickname === "익명" || !profile.job) {
+            toast({
+              title: "프로필 설정 필요",
+              description: "글을 쓰기 전에 활동명과 직업을 먼저 설정해 주세요.",
+            });
+            router.replace("/profile");
+            return;
+          }
+          setCurrentUser(user);
+          setLoadingAuth(false);
+        } catch (error) {
+          console.error("Error checking profile in write page:", error);
+          setLoadingAuth(false);
+        }
       } else {
         router.push("/login"); // Redirect to login if not authenticated
       }
     });
     return () => unsubscribe();
-  }, [router]);
+  }, [router, toast]);
 
   useEffect(() => {
     if (timeoutRef.current) {

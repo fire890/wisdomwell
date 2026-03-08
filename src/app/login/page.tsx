@@ -6,7 +6,7 @@ import { signInWithGoogle, onAuthStateChange, getUserProfile } from "@/lib/auth"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { GoogleIcon } from "@/components/icons/google";
-import { LoaderCircle, AlertCircle, Home } from "lucide-react";
+import { LoaderCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -15,41 +15,39 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [takeTooLong, setTakeTooLong] = useState(false);
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isRedirecting = useRef(false);
 
   useEffect(() => {
-    console.log("LoginPage mounted, starting auth listener");
+    console.log("LoginPage mounted");
     
-    // 10초 이상 걸리면 사용자에게 수동 조작 옵션 제공
     loadingTimeoutRef.current = setTimeout(() => {
-      if (loading) {
-        console.warn("Auth check is taking too long...");
-        setTakeTooLong(true);
-      }
-    }, 10000);
+      if (loading) setTakeTooLong(true);
+    }, 8000);
 
     const unsubscribe = onAuthStateChange(async (user) => {
-      console.log("Auth state changed, user UID:", user?.uid);
-      
+      // 이미 리다이렉트 중이면 중복 실행 방지
+      if (isRedirecting.current) return;
+
       if (user) {
+        console.log("User detected by listener:", user.uid);
         try {
-          console.log("Fetching profile for user:", user.uid);
           const profile = await getUserProfile(user.uid);
-          console.log("Profile fetch result:", profile);
-          
-          if (profile && profile.nickname && profile.job) {
-            console.log("Profile complete, redirecting to home");
+          // 닉네임과 직업이 모두 있어야 완성된 프로필로 간주
+          if (profile && profile.nickname && profile.nickname !== "익명" && profile.job) {
+            console.log("Profile complete, going home");
+            isRedirecting.current = true;
             router.replace("/");
           } else {
-            console.log("Profile incomplete, redirecting to profile settings");
+            console.log("Profile incomplete, going to profile setup");
+            isRedirecting.current = true;
             router.replace("/profile");
           }
-        } catch (err: any) {
-          console.error("Error during post-auth process:", err);
-          setError("프로필 정보를 가져오는 중 오류가 발생했습니다.");
+        } catch (err) {
+          console.error("Listener profile fetch error:", err);
           setLoading(false);
         }
       } else {
-        console.log("No user authenticated, showing login UI");
+        console.log("No user session found");
         setLoading(false);
       }
     });
@@ -61,18 +59,28 @@ export default function LoginPage() {
   }, [router, loading]);
 
   const handleGoogleSignIn = async () => {
+    if (isRedirecting.current) return;
+    
     try {
       setError(null);
       setLoading(true);
-      setTakeTooLong(false);
-      console.log("Starting Google Sign-In popup...");
-      await signInWithGoogle();
-      console.log("Google Sign-In popup completed");
-      // onAuthStateChange will handle the rest
+      console.log("Initiating Google Sign-In...");
+      
+      // signInWithGoogle returns the created/existing profile
+      const profile = await signInWithGoogle();
+      console.log("Sign-in successful, profile:", profile);
+
+      isRedirecting.current = true;
+      if (profile && profile.nickname && profile.nickname !== "익명" && profile.job) {
+        router.replace("/");
+      } else {
+        router.replace("/profile");
+      }
     } catch (err: any) {
-      console.error("Login failed:", err);
+      console.error("Sign-in process error:", err);
+      isRedirecting.current = false;
       if (err.code !== 'auth/popup-closed-by-user') {
-        setError(err.message || "로그인 중 알 수 없는 오류가 발생했습니다.");
+        setError("로그인 처리 중 오류가 발생했습니다. 다시 시도해 주세요.");
       }
       setLoading(false);
     }
@@ -81,33 +89,13 @@ export default function LoginPage() {
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen gap-6 px-4">
-        <div className="flex flex-col items-center gap-4">
-          <LoaderCircle className="animate-spin h-12 w-12 text-primary" />
-          <div className="text-center">
-            <p className="text-lg font-medium animate-pulse">인증 확인 중...</p>
-            <p className="text-sm text-muted-foreground mt-1">잠시만 기다려 주세요.</p>
-          </div>
+        <LoaderCircle className="animate-spin h-12 w-12 text-primary" />
+        <div className="text-center">
+          <p className="text-lg font-medium animate-pulse">인증 및 프로필 확인 중...</p>
+          {takeTooLong && (
+            <p className="text-sm text-orange-500 mt-2">연결이 지연되고 있습니다. 잠시만 더 기다려 주세요.</p>
+          )}
         </div>
-
-        {takeTooLong && (
-          <Card className="max-w-xs border-orange-200 bg-orange-50 dark:bg-orange-950/20">
-            <CardContent className="pt-6 flex flex-col items-center text-center gap-4">
-              <AlertCircle className="h-8 w-8 text-orange-500" />
-              <div className="space-y-2">
-                <p className="text-sm font-medium">응답이 평소보다 늦어지고 있습니다.</p>
-                <p className="text-xs text-muted-foreground">네트워크 연결을 확인하거나 아래 버튼을 눌러보세요.</p>
-              </div>
-              <div className="flex flex-col w-full gap-2">
-                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-                  페이지 새로고침
-                </Button>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/">메인 화면으로 가기</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     );
   }
