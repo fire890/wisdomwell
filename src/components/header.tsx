@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Feather, User, LogOut, Settings } from 'lucide-react';
+import { Feather, User, LogOut, Settings, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { onAuthStateChange, logout, getUserProfile, UserProfile } from '@/lib/auth';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -20,6 +20,7 @@ export function Header() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const ADMIN_EMAILS = ["fire9436@gmail.com"];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange(async (user) => {
@@ -43,6 +44,8 @@ export function Header() {
     }
   };
 
+  const isAdmin = currentUser?.email && ADMIN_EMAILS.includes(currentUser.email);
+
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -55,6 +58,14 @@ export function Header() {
         <nav className="flex items-center gap-2 sm:gap-4">
           {currentUser ? (
             <>
+              {isAdmin && (
+                <Button variant="ghost" asChild className="hidden md:flex gap-2">
+                  <Link href="/admin">
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>관리자</span>
+                  </Link>
+                </Button>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden hover:opacity-80 transition-opacity focus-visible:ring-0">
@@ -74,12 +85,21 @@ export function Header() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {isAdmin && (
+                    <DropdownMenuItem asChild className="md:hidden">
+                      <Link href="/admin" className="cursor-pointer flex w-full items-center">
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        <span>관리자</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer flex w-full items-center">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>계정 설정</span>
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>로그아웃</span>

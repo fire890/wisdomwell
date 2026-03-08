@@ -1,5 +1,5 @@
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { auth, firestore } from "./firebase";
 
 // ... (existing UserProfile interface)
@@ -83,6 +83,12 @@ export const getUserProfile = async (uid: string) => {
     return docSnap.data() as UserProfile;
   }
   return null;
+};
+
+export const getAllUserProfiles = async () => {
+  const usersRef = collection(firestore, "users");
+  const querySnapshot = await getDocs(usersRef);
+  return querySnapshot.docs.map(doc => doc.data() as UserProfile);
 };
 
 export const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
