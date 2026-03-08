@@ -19,20 +19,33 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange(async (user) => {
-      if (user) {
-        setCurrentUser(user);
-        const profile = await getUserProfile(user.uid);
-        if (profile) {
-          setNickname(profile.nickname || "");
-          setJob(profile.job || "");
+      try {
+        if (user) {
+          console.log("Auth state: user logged in", user.uid);
+          setCurrentUser(user);
+          const profile = await getUserProfile(user.uid);
+          console.log("Profile data:", profile);
+          if (profile) {
+            setNickname(profile.nickname || "");
+            setJob(profile.job || "");
+          }
+        } else {
+          console.log("Auth state: no user, redirecting to login");
+          router.push("/login");
         }
+      } catch (error) {
+        console.error("Error in profile auth listener:", error);
+        toast({
+          title: "오류 발생",
+          description: "데이터를 불러오는 중 문제가 발생했습니다. 페이지를 새로고침해 주세요.",
+          variant: "destructive",
+        });
+      } finally {
         setLoading(false);
-      } else {
-        router.push("/login");
       }
     });
     return () => unsubscribe();
-  }, [router]);
+  }, [router, toast]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
