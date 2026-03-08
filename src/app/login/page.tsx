@@ -18,7 +18,6 @@ export default function LoginPage() {
   const performRedirect = (path: string) => {
     if (isRedirecting.current) return;
     isRedirecting.current = true;
-    console.log(`Redirecting to: ${path}`);
     
     // Next.js router와 브라우저 location을 모두 활용하여 확실히 이동
     router.replace(path);
@@ -30,13 +29,10 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    console.log("LoginPage mounted, setting up listener");
-    
     const unsubscribe = onAuthStateChange(async (user) => {
       if (isRedirecting.current) return;
 
       if (user) {
-        console.log("Auth detected user:", user.uid);
         try {
           const profile = await getUserProfile(user.uid);
           if (profile && profile.nickname && profile.nickname !== "익명" && profile.job) {
@@ -49,7 +45,6 @@ export default function LoginPage() {
           setLoading(false);
         }
       } else {
-        console.log("No user session");
         setLoading(false);
       }
     });
@@ -63,10 +58,8 @@ export default function LoginPage() {
     try {
       setError(null);
       setLoading(true);
-      console.log("SignIn button clicked");
       
       const profile = await signInWithGoogle();
-      console.log("SignIn complete, profile check:", !!profile);
 
       if (profile && profile.nickname && profile.nickname !== "익명" && profile.job) {
         performRedirect("/");

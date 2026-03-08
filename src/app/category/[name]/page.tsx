@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { notFound } from 'next/navigation';
 import { articles as staticArticles, authors, categories } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -9,12 +9,13 @@ import type { Article } from '@/lib/data';
 import { database } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
 
-export default function CategoryPage({ params }: { params: { name: string } }) {
+export default function CategoryPage({ params }: { params: Promise<{ name: string }> }) {
+  const resolvedParams = use(params);
   const [firebaseArticles, setFirebaseArticles] = useState<Article[]>([]);
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const decodedName = decodeURIComponent(params.name);
+  const decodedName = decodeURIComponent(resolvedParams.name);
   const category = categories.find(
     (c) => c.name.toLowerCase().replace(/\s+/g, '-') === decodedName || c.name === decodedName
   );

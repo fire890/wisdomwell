@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { articles as staticArticles, authors } from '@/lib/data';
@@ -29,7 +29,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export default function ArticlePage({ params }: { params: { id: string } }) {
+export default function ArticlePage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const router = useRouter();
   const { toast } = useToast();
   const [article, setArticle] = useState<Article | null>(null);
@@ -53,7 +54,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         let foundArticle: Article | null = null;
         
         // 정적 데이터에서 먼저 확인
-        const staticArticle = staticArticles.find((a) => a.id === params.id);
+        const staticArticle = staticArticles.find((a) => a.id === resolvedParams.id);
         if (staticArticle) {
           foundArticle = staticArticle;
         } else {
@@ -62,7 +63,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
           const snapshot = await get(child(dbRef, `articles`));
           if (snapshot.exists()) {
             const data = snapshot.val();
-            foundArticle = Object.values(data).find((a: any) => a.id === params.id) as Article;
+            foundArticle = Object.values(data).find((a: any) => a.id === resolvedParams.id) as Article;
           }
         }
 
@@ -97,7 +98,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     };
 
     fetchArticleAndAuthor();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   const handleDelete = async () => {
     if (!currentUser || !article || currentUser.uid !== article.authorId) {
