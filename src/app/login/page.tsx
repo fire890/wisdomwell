@@ -7,56 +7,55 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { GoogleIcon } from "@/components/icons/google";
 import { LoaderCircle, AlertCircle } from "lucide-react";
-import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [takeTooLong, setTakeTooLong] = useState(false);
-  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRedirecting = useRef(false);
 
-  useEffect(() => {
-    console.log("LoginPage mounted");
+  // 리다이렉트 함수 (가장 확실한 방법 사용)
+  const performRedirect = (path: string) => {
+    if (isRedirecting.current) return;
+    isRedirecting.current = true;
+    console.log(`Redirecting to: ${path}`);
     
-    loadingTimeoutRef.current = setTimeout(() => {
-      if (loading) setTakeTooLong(true);
-    }, 8000);
+    // Next.js router와 브라우저 location을 모두 활용하여 확실히 이동
+    router.replace(path);
+    setTimeout(() => {
+      if (window.location.pathname === "/login") {
+        window.location.href = path;
+      }
+    }, 500);
+  };
 
+  useEffect(() => {
+    console.log("LoginPage mounted, setting up listener");
+    
     const unsubscribe = onAuthStateChange(async (user) => {
-      // 이미 리다이렉트 중이면 중복 실행 방지
       if (isRedirecting.current) return;
 
       if (user) {
-        console.log("User detected by listener:", user.uid);
+        console.log("Auth detected user:", user.uid);
         try {
           const profile = await getUserProfile(user.uid);
-          // 닉네임과 직업이 모두 있어야 완성된 프로필로 간주
           if (profile && profile.nickname && profile.nickname !== "익명" && profile.job) {
-            console.log("Profile complete, going home");
-            isRedirecting.current = true;
-            router.replace("/");
+            performRedirect("/");
           } else {
-            console.log("Profile incomplete, going to profile setup");
-            isRedirecting.current = true;
-            router.replace("/profile");
+            performRedirect("/profile");
           }
         } catch (err) {
-          console.error("Listener profile fetch error:", err);
+          console.error("Profile check error:", err);
           setLoading(false);
         }
       } else {
-        console.log("No user session found");
+        console.log("No user session");
         setLoading(false);
       }
     });
     
-    return () => {
-      if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
-      unsubscribe();
-    };
-  }, [router, loading]);
+    return () => unsubscribe();
+  }, [router]);
 
   const handleGoogleSignIn = async () => {
     if (isRedirecting.current) return;
@@ -64,23 +63,20 @@ export default function LoginPage() {
     try {
       setError(null);
       setLoading(true);
-      console.log("Initiating Google Sign-In...");
+      console.log("SignIn button clicked");
       
-      // signInWithGoogle returns the created/existing profile
       const profile = await signInWithGoogle();
-      console.log("Sign-in successful, profile:", profile);
+      console.log("SignIn complete, profile check:", !!profile);
 
-      isRedirecting.current = true;
       if (profile && profile.nickname && profile.nickname !== "익명" && profile.job) {
-        router.replace("/");
+        performRedirect("/");
       } else {
-        router.replace("/profile");
+        performRedirect("/profile");
       }
     } catch (err: any) {
-      console.error("Sign-in process error:", err);
-      isRedirecting.current = false;
+      console.error("SignIn error:", err);
       if (err.code !== 'auth/popup-closed-by-user') {
-        setError("로그인 처리 중 오류가 발생했습니다. 다시 시도해 주세요.");
+        setError("로그인에 실패했습니다. 다시 시도해 주세요.");
       }
       setLoading(false);
     }
@@ -88,14 +84,9 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen gap-6 px-4">
+      <div className="flex flex-col justify-center items-center h-screen gap-4">
         <LoaderCircle className="animate-spin h-12 w-12 text-primary" />
-        <div className="text-center">
-          <p className="text-lg font-medium animate-pulse">인증 및 프로필 확인 중...</p>
-          {takeTooLong && (
-            <p className="text-sm text-orange-500 mt-2">연결이 지연되고 있습니다. 잠시만 더 기다려 주세요.</p>
-          )}
-        </div>
+        <p className="text-lg font-medium animate-pulse">잠시만 기다려 주세요...</p>
       </div>
     );
   }
